@@ -18,7 +18,7 @@ public class SecurityConfig {
 
         http
                 .cors(Customizer.withDefaults())
-                
+
                 .csrf(csrf -> csrf.disable())
 
                 .sessionManagement(session ->
@@ -29,11 +29,15 @@ public class SecurityConfig {
 
                 .authorizeHttpRequests(auth -> auth
 
-                        // 회원가입과 로그인은 인증 없이 허용
+                        // 회원가입, 로그인, 비밀번호 재설정은
+                        // 인증 없이 허용
                         .requestMatchers(
                                 HttpMethod.POST,
                                 "/api/members",
-                                "/api/members/login"
+                                "/api/members/login",
+                                "/api/auth/password-reset/request",
+                                "/api/auth/password-reset/verify",
+                                "/api/auth/password-reset/confirm"
                         ).permitAll()
 
                         // 나머지 API는 JWT 필요

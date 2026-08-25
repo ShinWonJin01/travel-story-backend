@@ -74,6 +74,11 @@
 			<artifactId>mysql-connector-j</artifactId>
 			<scope>runtime</scope>
 		</dependency>
+		<!-- 이메일 발송 -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-mail</artifactId>
+		</dependency>
 		<!-- 이미지 EXIF 메타데이터 추출 -->
 		<dependency>
 			<groupId>com.drewnoakes</groupId>
