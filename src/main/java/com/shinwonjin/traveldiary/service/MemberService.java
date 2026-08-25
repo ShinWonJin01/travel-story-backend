@@ -395,6 +395,10 @@ public class MemberService {
 
         notificationService.cleanupMemberNotifications(memberId);
 
+        fileStorageService.deleteProfileImage(
+                member.getProfileImagePath()
+        );
+
         memberRepository.delete(member);
     }
 
