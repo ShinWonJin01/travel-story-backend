@@ -184,6 +184,44 @@ public class TripService {
         return TripResponse.from(trip);
     }
 
+    @Transactional
+    public TripResponse deleteCoverImage(
+            Long memberId,
+            Long tripId
+    ) {
+        Trip trip = tripRepository
+                .findByIdAndOwnerId(
+                        tripId,
+                        memberId
+                )
+                .orElseThrow(() ->
+                        new IllegalArgumentException(
+                                "여행 정보를 찾을 수 없습니다."
+                        )
+                );
+
+        String coverImagePath =
+                trip.getCoverImagePath();
+
+        if (
+                coverImagePath == null
+                || coverImagePath.isBlank()
+        ) {
+            throw new IllegalArgumentException(
+                    "삭제할 대표 이미지가 없습니다."
+            );
+        }
+
+        fileStorageService.deleteTripCoverImage(
+                tripId,
+                coverImagePath
+        );
+
+        trip.updateCoverImagePath(null);
+
+        return TripResponse.from(trip);
+    }
+
     @Transactional(readOnly = true)
     public Resource getTripCoverImage(
             Long memberId,

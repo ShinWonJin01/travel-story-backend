@@ -202,6 +202,22 @@ public class TripController {
                 .body(resource);
     }
 
+    @DeleteMapping("/{tripId}/cover-image")
+    public ResponseEntity<TripResponse> deleteCoverImage(
+            @AuthenticationPrincipal Jwt jwt,
+            @PathVariable Long tripId
+    ) {
+        Long memberId = Long.valueOf(jwt.getSubject());
+
+        TripResponse response =
+                tripService.deleteCoverImage(
+                        memberId,
+                        tripId
+                );
+
+        return ResponseEntity.ok(response);
+    }
+
     @PostMapping(
             value = "/{tripId}/photos",
             consumes = MediaType.MULTIPART_FORM_DATA_VALUE

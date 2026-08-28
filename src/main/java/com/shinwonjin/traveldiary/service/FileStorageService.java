@@ -258,6 +258,53 @@ public class FileStorageService {
         }
     }
 
+    public void deleteTripCoverImage(
+            Long tripId,
+            String coverImagePath
+    ) {
+    if (
+            coverImagePath == null
+            || coverImagePath.isBlank()
+    ) {
+            return;
+    }
+
+    String expectedPrefix =
+            "/uploads/trips/"
+            + tripId
+            + "/";
+
+    if (!coverImagePath.startsWith(expectedPrefix)) {
+            throw new IllegalArgumentException(
+                    "올바르지 않은 여행 대표 이미지 경로입니다."
+            );
+    }
+
+    String relativePath =
+            coverImagePath.substring(
+                    "/uploads/".length()
+            );
+
+    Path targetPath = uploadRoot
+            .resolve(relativePath)
+            .normalize();
+
+    if (!targetPath.startsWith(uploadRoot)) {
+            throw new IllegalArgumentException(
+                    "올바르지 않은 파일 삭제 경로입니다."
+            );
+    }
+
+    try {
+            Files.deleteIfExists(targetPath);
+    } catch (IOException exception) {
+            throw new IllegalStateException(
+                    "여행 대표 이미지 파일을 삭제하지 못했습니다.",
+                    exception
+            );
+    }
+    }
+    
     public void deleteTripPhoto(
             Long tripId,
             String photoPath
