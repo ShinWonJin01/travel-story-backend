@@ -61,17 +61,36 @@ public class TripInvitationService {
             );
         }
 
-        boolean alreadyRegistered =
+        TripMember existingTripMember =
                 tripMemberRepository
-                        .existsByTripIdAndMemberId(
+                        .findByTripIdAndMemberId(
                                 tripId,
                                 invitee.getId()
-                        );
+                        )
+                        .orElse(null);
 
-        if (alreadyRegistered) {
-            throw new IllegalArgumentException(
-                    "이미 초대했거나 여행에 참여 중인 회원입니다."
-            );
+        if (existingTripMember != null) {
+        if (existingTripMember.getStatus()
+                == TripMemberStatus.PENDING) {
+                throw new IllegalArgumentException(
+                        "이미 초대 응답을 기다리고 있는 회원입니다."
+                );
+        }
+
+        if (existingTripMember.getStatus()
+                == TripMemberStatus.ACCEPTED) {
+                throw new IllegalArgumentException(
+                        "이미 여행에 참여 중인 회원입니다."
+                );
+        }
+
+        if (existingTripMember.getStatus()
+                == TripMemberStatus.DECLINED) {
+                tripMemberRepository.delete(
+                        existingTripMember
+                );
+                tripMemberRepository.flush();
+        }
         }
 
         TripMember invitation =
