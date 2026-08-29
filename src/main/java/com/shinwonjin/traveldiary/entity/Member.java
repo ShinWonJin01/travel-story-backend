@@ -42,6 +42,18 @@ public class Member {
     )
     private String profileImagePath;
 
+    @Column(
+            name = "invitation_notification_enabled",
+            nullable = false
+    )
+    private boolean invitationNotificationEnabled = true;
+
+    @Column(
+            name = "activity_notification_enabled",
+            nullable = false
+    )
+    private boolean activityNotificationEnabled = true;
+
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
@@ -95,5 +107,15 @@ public class Member {
 
     public void clearProfileImagePath() {
         this.profileImagePath = null;
+    }
+
+    public void updateSettings(
+            boolean invitationNotificationEnabled,
+            boolean activityNotificationEnabled
+    ) {
+        this.invitationNotificationEnabled =
+                invitationNotificationEnabled;
+        this.activityNotificationEnabled =
+                activityNotificationEnabled;
     }
 }

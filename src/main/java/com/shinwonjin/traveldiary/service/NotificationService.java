@@ -28,15 +28,40 @@ public class NotificationService {
             NotificationType type,
             String message
     ) {
-        Notification notification = Notification.create(
+        if (!isNotificationEnabled(
                 receiver,
-                actor,
-                trip,
-                type,
-                message
-        );
+                type
+        )) {
+            return;
+        }
+
+        Notification notification =
+                Notification.create(
+                        receiver,
+                        actor,
+                        trip,
+                        type,
+                        message
+                );
 
         notificationRepository.save(notification);
+    }
+
+    private boolean isNotificationEnabled(
+            Member receiver,
+            NotificationType type
+    ) {
+        return switch (type) {
+            case TRIP_INVITED ->
+                    receiver.isInvitationNotificationEnabled();
+
+            case INVITATION_ACCEPTED,
+                INVITATION_REJECTED,
+                MEMBER_LEFT_TRIP,
+                TRIP_UPDATED,
+                TRIP_DELETED ->
+                    receiver.isActivityNotificationEnabled();
+        };
     }
 
     @Transactional(readOnly = true)

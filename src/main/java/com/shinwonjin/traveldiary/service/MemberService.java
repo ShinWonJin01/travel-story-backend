@@ -17,6 +17,8 @@ import com.shinwonjin.traveldiary.dto.member.MemberLoginResponse;
 import com.shinwonjin.traveldiary.dto.member.MemberPasswordChangeRequest;
 import com.shinwonjin.traveldiary.dto.member.MemberProfileUpdateRequest;
 import com.shinwonjin.traveldiary.dto.member.MemberResponse;
+import com.shinwonjin.traveldiary.dto.member.MemberSettingsResponse;
+import com.shinwonjin.traveldiary.dto.member.MemberSettingsUpdateRequest;
 import com.shinwonjin.traveldiary.entity.Member;
 import com.shinwonjin.traveldiary.entity.TripMember;
 import com.shinwonjin.traveldiary.entity.NotificationType;
@@ -289,6 +291,42 @@ public class MemberService {
         }
 
         return MemberResponse.from(member);
+    }
+
+    @Transactional(readOnly = true)
+    public MemberSettingsResponse getSettings(
+            Long memberId
+    ) {
+        Member member = memberRepository
+                .findById(memberId)
+                .orElseThrow(() ->
+                        new IllegalArgumentException(
+                                "회원 정보를 찾을 수 없습니다."
+                        )
+                );
+
+        return MemberSettingsResponse.from(member);
+    }
+
+    @Transactional
+    public MemberSettingsResponse updateSettings(
+            Long memberId,
+            MemberSettingsUpdateRequest request
+    ) {
+        Member member = memberRepository
+                .findById(memberId)
+                .orElseThrow(() ->
+                        new IllegalArgumentException(
+                                "회원 정보를 찾을 수 없습니다."
+                        )
+                );
+
+        member.updateSettings(
+                request.invitationNotificationEnabled(),
+                request.activityNotificationEnabled()
+        );
+
+        return MemberSettingsResponse.from(member);
     }
 
     @Transactional

@@ -25,6 +25,8 @@ import com.shinwonjin.traveldiary.dto.member.MemberLoginResponse;
 import com.shinwonjin.traveldiary.dto.member.MemberPasswordChangeRequest;
 import com.shinwonjin.traveldiary.dto.member.MemberProfileUpdateRequest;
 import com.shinwonjin.traveldiary.dto.member.MemberResponse;
+import com.shinwonjin.traveldiary.dto.member.MemberSettingsResponse;
+import com.shinwonjin.traveldiary.dto.member.MemberSettingsUpdateRequest;
 import com.shinwonjin.traveldiary.service.MemberService;
 
 import jakarta.validation.Valid;
@@ -143,6 +145,36 @@ public class MemberController {
         MemberResponse response =
                 memberService.resetProfileImage(
                         memberId
+                );
+
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/me/settings")
+    public ResponseEntity<MemberSettingsResponse> getSettings(
+            @AuthenticationPrincipal Jwt jwt
+    ) {
+        Long memberId =
+                Long.valueOf(jwt.getSubject());
+
+        MemberSettingsResponse response =
+                memberService.getSettings(memberId);
+
+        return ResponseEntity.ok(response);
+    }
+
+    @PatchMapping("/me/settings")
+    public ResponseEntity<MemberSettingsResponse> updateSettings(
+            @AuthenticationPrincipal Jwt jwt,
+            @Valid @RequestBody MemberSettingsUpdateRequest request
+    ) {
+        Long memberId =
+                Long.valueOf(jwt.getSubject());
+
+        MemberSettingsResponse response =
+                memberService.updateSettings(
+                        memberId,
+                        request
                 );
 
         return ResponseEntity.ok(response);
