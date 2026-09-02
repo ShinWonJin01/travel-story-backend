@@ -81,7 +81,9 @@ public class HomeService {
             ActivityGroup newGroup = new ActivityGroup(
                     photo.getTrip().getId(),
                     photo.getTrip().getTitle(),
+                    uploadedBy.getId(),
                     uploadedBy.getNickname(),
+                    uploadedBy.getProfileImagePath(),
                     photo.getCreatedAt()
             );
 
@@ -101,7 +103,9 @@ public class HomeService {
                         new RecentActivityResponse(
                                 group.tripId,
                                 group.tripTitle,
+                                group.actorId,
                                 group.actorNickname,
+                                group.actorProfileImagePath,
                                 group.photoCount,
                                 group.createdAt
                         )
@@ -146,19 +150,25 @@ public class HomeService {
 
         private final Long tripId;
         private final String tripTitle;
+        private final Long actorId;
         private final String actorNickname;
+        private final String actorProfileImagePath;
         private final java.time.LocalDateTime createdAt;
         private int photoCount = 1;
 
         private ActivityGroup(
                 Long tripId,
                 String tripTitle,
+                Long actorId,
                 String actorNickname,
+                String actorProfileImagePath,
                 java.time.LocalDateTime createdAt
         ) {
             this.tripId = tripId;
             this.tripTitle = tripTitle;
+            this.actorId = actorId;
             this.actorNickname = actorNickname;
+            this.actorProfileImagePath = actorProfileImagePath;
             this.createdAt = createdAt;
         }
     }
