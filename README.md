@@ -1,14 +1,14 @@
-# Travel Diary Backend
+# Travel Story Backend
 
 사진의 시간·위치 정보를 기반으로 여행 기록을 타임라인과 지도 형태로 구성하고,
-동행자를 초대해 함께 기록을 공유할 수 있는 **Travel Diary 웹 서비스의 Backend**입니다.
+동행자를 초대해 함께 기록을 공유할 수 있는 **Travel Story 웹 서비스의 Backend**입니다.
 
 회원 인증, 여행 관리, 사진 관리, 참여자 초대, 알림 등의 기능을 REST API로 제공합니다.
 
 ## Repository
 
-* **Frontend:** https://github.com/ShinWonJin01/travel-diary-web
-* **Backend:** https://github.com/ShinWonJin01/travel-diary-backend
+* **Frontend:** https://github.com/ShinWonJin01/travel-story-frontend
+* **Backend:** https://github.com/ShinWonJin01/travel-story-backend
 
 ## Tech Stack
 
@@ -188,8 +188,8 @@ Controller에서는 인증된 사용자 정보를 기준으로 요청을 처리�
 ### 1. Repository Clone
 
 ```bash
-git clone https://github.com/ShinWonJin01/travel-diary-backend.git
-cd travel-diary-backend
+git clone https://github.com/ShinWonJin01/travel-story-backend.git
+cd travel-story-backend
 ```
 
 ### 2. Requirements
@@ -230,7 +230,7 @@ Windows PowerShell 기준:
 Frontend는 Vue 3와 TypeScript 기반의 별도 프로젝트로 구성되어 있습니다.
 
 **Frontend Repository**
-https://github.com/ShinWonJin01/travel-diary-web
+https://github.com/ShinWonJin01/travel-story-frontend
 
 Frontend에서 REST API를 호출하여 회원, 여행, 사진, 초대, 알림 등의 기능을 사용합니다.
 

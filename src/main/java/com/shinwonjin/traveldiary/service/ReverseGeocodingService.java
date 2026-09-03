@@ -185,7 +185,7 @@ public class ReverseGeocodingService {
                         .uri(URI.create(url))
                         .header(
                                 "User-Agent",
-                                "travel-diary-backend/1.0"
+                                "travel-story-backend/1.0"
                         )
                         .GET()
                         .build();

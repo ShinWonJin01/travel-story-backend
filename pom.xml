@@ -9,9 +9,9 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.shinwonjin</groupId>
-	<artifactId>travel-diary-backend</artifactId>
+	<artifactId>travel-story-backend</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>travel-diary-backend</name>
+	<name>travel-story-backend</name>
 	<description/>
 	<url/>
 	<licenses>

@@ -30,11 +30,11 @@ public class MailService {
         message.setFrom(mailUsername);
         message.setTo(email);
         message.setSubject(
-                "[Travel Diary] 비밀번호 재설정 인증번호"
+                "[Travel Story] 비밀번호 재설정 인증번호"
         );
         message.setText(
                 """
-                Travel Diary 비밀번호 재설정 인증번호입니다.
+                Travel Story 비밀번호 재설정 인증번호입니다.
 
                 인증번호: %s
 
