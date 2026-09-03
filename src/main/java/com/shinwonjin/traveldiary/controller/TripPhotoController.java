@@ -174,4 +174,22 @@ public class TripPhotoController {
 
         return ResponseEntity.ok(response);
     }
+
+    @DeleteMapping("/{photoId}/location")
+    public ResponseEntity<TripPhotoResponse> deleteTripPhotoLocation(
+            @AuthenticationPrincipal Jwt jwt,
+            @PathVariable Long tripId,
+            @PathVariable Long photoId
+    ) {
+    Long memberId = Long.valueOf(jwt.getSubject());
+
+    TripPhotoResponse response =
+            tripPhotoService.deleteTripPhotoLocation(
+                    memberId,
+                    tripId,
+                    photoId
+            );
+
+    return ResponseEntity.ok(response);
+    }
 }

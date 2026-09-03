@@ -120,4 +120,10 @@ public class TripPhoto {
         this.longitude = longitude;
         this.locationName = locationName;
     }
+
+    public void clearLocation() {
+        this.latitude = null;
+        this.longitude = null;
+        this.locationName = null;
+    }
 }

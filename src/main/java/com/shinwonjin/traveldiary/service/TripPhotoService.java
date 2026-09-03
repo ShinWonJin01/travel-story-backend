@@ -475,4 +475,58 @@ public class TripPhotoService {
 
         return TripPhotoResponse.from(tripPhoto);
     }
+
+    @Transactional
+    public TripPhotoResponse deleteTripPhotoLocation(
+            Long memberId,
+            Long tripId,
+            Long photoId
+    ) {
+        TripPhoto tripPhoto = tripPhotoRepository
+                .findById(photoId)
+                .orElseThrow(() ->
+                        new IllegalArgumentException(
+                                "사진 정보를 찾을 수 없습니다."
+                        )
+                );
+
+        if (!tripPhoto.getTrip().getId().equals(tripId)) {
+            throw new IllegalArgumentException(
+                    "이 여행의 사진이 아닙니다."
+            );
+        }
+
+        boolean isOwner =
+                tripPhoto.getTrip()
+                        .getOwner()
+                        .getId()
+                        .equals(memberId);
+
+        boolean isUploader =
+                tripPhoto.getUploadedBy() != null
+                && tripPhoto.getUploadedBy()
+                        .getId()
+                        .equals(memberId);
+
+        boolean isAcceptedMember =
+                tripMemberRepository
+                        .existsByTripIdAndMemberIdAndStatus(
+                                tripId,
+                                memberId,
+                                TripMemberStatus.ACCEPTED
+                        );
+
+        if (
+                !isOwner
+                && !(isUploader && isAcceptedMember)
+        ) {
+            throw new IllegalArgumentException(
+                    "이 사진의 위치를 삭제할 권한이 없습니다."
+            );
+        }
+
+        tripPhoto.clearLocation();
+
+        return TripPhotoResponse.from(tripPhoto);
+    }
 }
