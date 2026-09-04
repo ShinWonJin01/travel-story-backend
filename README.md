@@ -186,7 +186,7 @@ Repository에서는 Spring Data JPA를 통해 데이터베이스 접근을 처�
 ## Project Structure
 
 ```text
-src/main/java/com/shinwonjin/traveldiary
+src/main/java/com/shinwonjin/travelstory
 ├── config
 │   ├── CorsConfig.java
 │   ├── JwtConfig.java
@@ -211,7 +211,7 @@ src/main/java/com/shinwonjin/traveldiary
 ├── exception            # 예외 처리
 ├── repository           # Spring Data JPA Repository
 ├── service              # 비즈니스 로직
-└── TravelDiaryBackendApplication.java
+└── TravelStoryBackendApplication.java
 
 src/main/resources
 ├── application.properties
