@@ -1,38 +1,23 @@
 package com.shinwonjin.travelstory.service;
 
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.mail.SimpleMailMessage;
-import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 
+import lombok.RequiredArgsConstructor;
+
 @Service
+@RequiredArgsConstructor
 public class MailService {
 
-    private final JavaMailSender mailSender;
-    private final String mailUsername;
-
-    public MailService(
-            JavaMailSender mailSender,
-            @Value("${spring.mail.username}")
-            String mailUsername
-    ) {
-        this.mailSender = mailSender;
-        this.mailUsername = mailUsername;
-    }
+    private final GmailApiService gmailApiService;
 
     public void sendPasswordResetCode(
             String email,
             String verificationCode
     ) {
-        SimpleMailMessage message =
-                new SimpleMailMessage();
+        String subject =
+                "[Travel Story] 비밀번호 재설정 인증번호";
 
-        message.setFrom(mailUsername);
-        message.setTo(email);
-        message.setSubject(
-                "[Travel Story] 비밀번호 재설정 인증번호"
-        );
-        message.setText(
+        String body =
                 """
                 Travel Story 비밀번호 재설정 인증번호입니다.
 
@@ -40,9 +25,12 @@ public class MailService {
 
                 인증번호는 일정 시간 동안만 유효합니다.
                 본인이 요청하지 않았다면 이 메일을 무시해 주세요.
-                """.formatted(verificationCode)
-        );
+                """.formatted(verificationCode);
 
-        mailSender.send(message);
+        gmailApiService.sendTextEmail(
+                email,
+                subject,
+                body
+        );
     }
 }

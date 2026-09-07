@@ -6,6 +6,8 @@ import java.util.stream.Stream;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import com.shinwonjin.travelstory.dto.trip.TripCreateRequest;
 import com.shinwonjin.travelstory.dto.trip.TripListResponse;
@@ -35,6 +37,7 @@ public class TripService {
     private final TripMemberRepository tripMemberRepository;
     private final TripPhotoRepository tripPhotoRepository;
     private final FileStorageService fileStorageService;
+    private final CloudinaryService cloudinaryService;
     private final TripAiDiaryRepository tripAiDiaryRepository;
     private final NotificationService notificationService;
 
@@ -69,7 +72,6 @@ public class TripService {
 
         Trip savedTrip = tripRepository.save(trip);
 
-        // 여행 생성자를 여행 참여자 테이블에 자동 등록
         TripMember ownerTripMember =
                 TripMember.createOwner(
                         savedTrip,
@@ -194,7 +196,9 @@ public class TripService {
     }
 
     @Transactional(readOnly = true)
-    public TripSummaryResponse getTripSummary(Long memberId) {
+    public TripSummaryResponse getTripSummary(
+            Long memberId
+    ) {
         long ownedCount =
                 tripRepository.countByOwnerId(memberId);
 
@@ -242,7 +246,6 @@ public class TripService {
                                 TripMemberStatus.ACCEPTED
                         );
 
-        // 여행 생성자도 아니고 수락한 참여자도 아니면 조회 불가
         if (!isOwner && !isAcceptedMember) {
             throw new IllegalArgumentException(
                     "이 여행을 조회할 권한이 없습니다."
@@ -258,11 +261,19 @@ public class TripService {
             Long tripId
     ) {
         Trip trip = tripRepository
-                .findByIdAndOwnerId(tripId, memberId)
+                .findByIdAndOwnerId(
+                        tripId,
+                        memberId
+                )
                 .orElseThrow(() ->
                         new IllegalArgumentException(
                                 "여행 정보를 찾을 수 없습니다."
                         )
+                );
+
+        List<String> cloudinaryPublicIds =
+                collectCloudinaryPublicIds(
+                        trip
                 );
 
         List<TripMember> participants =
@@ -296,7 +307,11 @@ public class TripService {
         notificationService.clearTrip(tripId);
 
         tripRepository.delete(trip);
-        fileStorageService.deleteTripFiles(tripId);
+
+        registerTripImageCleanup(
+                tripId,
+                cloudinaryPublicIds
+        );
     }
 
     @Transactional
@@ -305,11 +320,19 @@ public class TripService {
             Long tripId
     ) {
         Trip trip = tripRepository
-                .findByIdAndOwnerId(tripId, memberId)
+                .findByIdAndOwnerId(
+                        tripId,
+                        memberId
+                )
                 .orElseThrow(() ->
                         new IllegalArgumentException(
                                 "여행 정보를 찾을 수 없습니다."
                         )
+                );
+
+        List<String> cloudinaryPublicIds =
+                collectCloudinaryPublicIds(
+                        trip
                 );
 
         List<TripMember> participants =
@@ -319,9 +342,11 @@ public class TripService {
                                 TripMemberStatus.ACCEPTED
                         );
 
-        String ownerNickname = trip.getOwner().getNickname();
+        String ownerNickname =
+                trip.getOwner().getNickname();
 
-        String tripTitle = trip.getTitle();
+        String tripTitle =
+                trip.getTitle();
 
         for (TripMember participant : participants) {
             if (participant.getRole() != TripMemberRole.MEMBER) {
@@ -347,7 +372,70 @@ public class TripService {
         notificationService.clearTrip(tripId);
 
         tripRepository.delete(trip);
-        fileStorageService.deleteTripFiles(tripId);
+
+        registerTripImageCleanup(
+                tripId,
+                cloudinaryPublicIds
+        );
+    }
+
+    private List<String> collectCloudinaryPublicIds(
+            Trip trip
+    ) {
+        Long tripId = trip.getId();
+
+        Stream<String> coverImagePublicId =
+                Stream.of(
+                        trip.getCoverImageCloudinaryPublicId()
+                );
+
+        Stream<String> photoPublicIds =
+                tripPhotoRepository
+                        .findAllByTripIdOrderByCreatedAtAsc(
+                                tripId
+                        )
+                        .stream()
+                        .map(photo ->
+                                photo.getCloudinaryPublicId()
+                        );
+
+        return Stream.concat(
+                        coverImagePublicId,
+                        photoPublicIds
+                )
+                .filter(publicId ->
+                        publicId != null
+                        && !publicId.isBlank()
+                )
+                .distinct()
+                .toList();
+    }
+
+    private void registerTripImageCleanup(
+            Long tripId,
+            List<String> cloudinaryPublicIds
+    ) {
+        TransactionSynchronizationManager
+                .registerSynchronization(
+                        new TransactionSynchronization() {
+
+                            @Override
+                            public void afterCommit() {
+                                for (
+                                        String publicId
+                                        : cloudinaryPublicIds
+                                ) {
+                                    cloudinaryService.deleteImage(
+                                            publicId
+                                    );
+                                }
+
+                                fileStorageService.deleteTripFiles(
+                                        tripId
+                                );
+                            }
+                        }
+                );
     }
 
     private void validateTripDates(

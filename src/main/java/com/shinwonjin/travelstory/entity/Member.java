@@ -43,6 +43,12 @@ public class Member {
     private String profileImagePath;
 
     @Column(
+            name = "profile_image_cloudinary_public_id",
+            length = 500
+    )
+    private String profileImageCloudinaryPublicId;
+
+    @Column(
             name = "invitation_notification_enabled",
             nullable = false
     )
@@ -98,15 +104,20 @@ public class Member {
         this.nickname = nickname;
     }
 
-    public void updateProfileImagePath(
-            String profileImagePath
+    public void updateProfileImage(
+            String profileImagePath,
+            String profileImageCloudinaryPublicId
     ) {
         this.profileImagePath =
                 profileImagePath;
+
+        this.profileImageCloudinaryPublicId =
+                profileImageCloudinaryPublicId;
     }
 
-    public void clearProfileImagePath() {
+    public void clearProfileImage() {
         this.profileImagePath = null;
+        this.profileImageCloudinaryPublicId = null;
     }
 
     public void updateSettings(

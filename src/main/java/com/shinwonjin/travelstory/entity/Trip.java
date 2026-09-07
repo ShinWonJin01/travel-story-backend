@@ -51,6 +51,9 @@ public class Trip {
     @Column(name = "cover_image_path", length = 500)
     private String coverImagePath;
 
+    @Column(name = "cover_image_cloudinary_public_id", length = 500)
+    private String coverImageCloudinaryPublicId;
+
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
@@ -89,8 +92,18 @@ public class Trip {
         );
     }
 
-    public void updateCoverImagePath(String coverImagePath) {
+    public void updateCoverImage(
+            String coverImagePath,
+            String coverImageCloudinaryPublicId
+    ) {
         this.coverImagePath = coverImagePath;
+        this.coverImageCloudinaryPublicId =
+                coverImageCloudinaryPublicId;
+    }
+
+    public void clearCoverImage() {
+        this.coverImagePath = null;
+        this.coverImageCloudinaryPublicId = null;
     }
 
     public void update(

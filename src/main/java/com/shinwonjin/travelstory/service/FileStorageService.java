@@ -48,11 +48,7 @@ public class FileStorageService {
             Long tripId,
             MultipartFile file
     ) {
-        validateImage(
-                file,
-                "대표 이미지를 선택해 주세요.",
-                "대표 이미지는 10MB 이하로 등록해 주세요."
-        );
+        validateTripCoverImage(file);
 
         return storeImage(
                 "trips",
@@ -61,8 +57,7 @@ public class FileStorageService {
         );
     }
 
-    public String storeTripPhoto(
-            Long tripId,
+    public void validateTripPhoto(
             MultipartFile file
     ) {
         validateImage(
@@ -70,6 +65,13 @@ public class FileStorageService {
                 "여행 사진을 선택해 주세요.",
                 "여행 사진은 10MB 이하로 등록해 주세요."
         );
+    }
+
+    public String storeTripPhoto(
+            Long tripId,
+            MultipartFile file
+    ) {
+        validateTripPhoto(file);
 
         return storeImage(
                 "trips",
@@ -82,11 +84,7 @@ public class FileStorageService {
             Long memberId,
             MultipartFile file
     ) {
-        validateImage(
-                file,
-                "프로필 이미지를 선택해 주세요.",
-                "프로필 이미지는 10MB 이하로 등록해 주세요."
-        );
+        validateProfileImage(file);
 
         return storeImage(
                 "profiles",
@@ -555,5 +553,25 @@ public class FileStorageService {
                             "지원하지 않는 이미지 형식입니다."
                     );
         };
+    }
+
+    public void validateTripCoverImage(
+            MultipartFile file
+    ) {
+        validateImage(
+                file,
+                "대표 이미지를 선택해 주세요.",
+                "대표 이미지는 10MB 이하로 등록해 주세요."
+        );
+    }
+
+    public void validateProfileImage(
+            MultipartFile file
+    ) {
+        validateImage(
+                file,
+                "프로필 이미지를 선택해 주세요.",
+                "프로필 이미지는 10MB 이하로 등록해 주세요."
+        );
     }
 }

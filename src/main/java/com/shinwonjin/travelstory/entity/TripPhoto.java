@@ -28,6 +28,9 @@ public class TripPhoto {
     @Column(name = "file_path", nullable = false, length = 500)
     private String filePath;
 
+    @Column(name = "cloudinary_public_id", length = 500)
+    private String cloudinaryPublicId;
+
     @Column(name = "original_file_name", nullable = false, length = 255)
     private String originalFileName;
 
@@ -53,6 +56,7 @@ public class TripPhoto {
             Trip trip,
             Member uploadedBy,
             String filePath,
+            String cloudinaryPublicId,
             String originalFileName,
             LocalDateTime takenAt,
             Double latitude,
@@ -63,6 +67,7 @@ public class TripPhoto {
         this.trip = trip;
         this.uploadedBy = uploadedBy;
         this.filePath = filePath;
+        this.cloudinaryPublicId = cloudinaryPublicId;
         this.originalFileName = originalFileName;
         this.takenAt = takenAt;
         this.latitude = latitude;
@@ -76,6 +81,7 @@ public class TripPhoto {
             Trip trip,
             Member uploadedBy,
             String filePath,
+            String cloudinaryPublicId,
             String originalFileName,
             LocalDateTime takenAt,
             Double latitude,
@@ -87,6 +93,7 @@ public class TripPhoto {
                 trip,
                 uploadedBy,
                 filePath,
+                cloudinaryPublicId,
                 originalFileName,
                 takenAt,
                 latitude,
@@ -109,6 +116,14 @@ public class TripPhoto {
             LocalDateTime takenAt
     ) {
         this.takenAt = takenAt;
+    }
+
+    public void updateStorage(
+            String filePath,
+            String cloudinaryPublicId
+    ) {
+        this.filePath = filePath;
+        this.cloudinaryPublicId = cloudinaryPublicId;
     }
 
     public void updateLocation(

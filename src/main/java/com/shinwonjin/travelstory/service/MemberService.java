@@ -40,6 +40,7 @@ public class MemberService {
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenService jwtTokenService;
     private final FileStorageService fileStorageService;
+    private final CloudinaryService cloudinaryService;
     private final TripRepository tripRepository;
     private final TripMemberRepository tripMemberRepository;
     private final TripPhotoRepository tripPhotoRepository;
@@ -174,17 +175,29 @@ public class MemberService {
                         )
                 );
 
+        fileStorageService.validateProfileImage(file);
+
         String previousProfileImagePath =
                 member.getProfileImagePath();
 
-        String newProfileImagePath =
-                fileStorageService.storeProfileImage(
-                        memberId,
-                        file
+        String previousCloudinaryPublicId =
+                member.getProfileImageCloudinaryPublicId();
+
+        CloudinaryService.UploadResult uploadResult =
+                cloudinaryService.uploadImage(
+                        file,
+                        "travel-story/profiles/" + memberId
                 );
 
-        member.updateProfileImagePath(
-                newProfileImagePath
+        String newProfileImagePath =
+                uploadResult.url();
+
+        String newCloudinaryPublicId =
+                uploadResult.publicId();
+
+        member.updateProfileImage(
+                newProfileImagePath,
+                newCloudinaryPublicId
         );
 
         TransactionSynchronizationManager
@@ -193,15 +206,10 @@ public class MemberService {
 
                             @Override
                             public void afterCommit() {
-                                if (
-                                        previousProfileImagePath != null
-                                        && !previousProfileImagePath.isBlank()
-                                ) {
-                                    fileStorageService
-                                            .deleteProfileImage(
-                                                    previousProfileImagePath
-                                            );
-                                }
+                                deleteProfileImage(
+                                        previousProfileImagePath,
+                                        previousCloudinaryPublicId
+                                );
                             }
 
                             @Override
@@ -212,10 +220,9 @@ public class MemberService {
                                         status
                                         != TransactionSynchronization.STATUS_COMMITTED
                                 ) {
-                                    fileStorageService
-                                            .deleteProfileImage(
-                                                    newProfileImagePath
-                                            );
+                                    cloudinaryService.deleteImage(
+                                            newCloudinaryPublicId
+                                    );
                                 }
                             }
                         }
@@ -248,6 +255,18 @@ public class MemberService {
             );
         }
 
+        String cloudinaryPublicId =
+                member.getProfileImageCloudinaryPublicId();
+
+        if (
+                cloudinaryPublicId != null
+                && !cloudinaryPublicId.isBlank()
+        ) {
+            return cloudinaryService.loadImage(
+                    profileImagePath
+            );
+        }
+
         return fileStorageService.loadProfileImage(
                 memberId,
                 profileImagePath
@@ -269,11 +288,20 @@ public class MemberService {
         String previousProfileImagePath =
                 member.getProfileImagePath();
 
-        member.clearProfileImagePath();
+        String previousCloudinaryPublicId =
+                member.getProfileImageCloudinaryPublicId();
+
+        member.clearProfileImage();
 
         if (
-                previousProfileImagePath != null
-                && !previousProfileImagePath.isBlank()
+                (
+                        previousProfileImagePath != null
+                        && !previousProfileImagePath.isBlank()
+                )
+                || (
+                        previousCloudinaryPublicId != null
+                        && !previousCloudinaryPublicId.isBlank()
+                )
         ) {
             TransactionSynchronizationManager
                     .registerSynchronization(
@@ -281,10 +309,10 @@ public class MemberService {
 
                                 @Override
                                 public void afterCommit() {
-                                    fileStorageService
-                                            .deleteProfileImage(
-                                                    previousProfileImagePath
-                                            );
+                                    deleteProfileImage(
+                                            previousProfileImagePath,
+                                            previousCloudinaryPublicId
+                                    );
                                 }
                             }
                     );
@@ -392,6 +420,12 @@ public class MemberService {
             );
         }
 
+        String profileImagePath =
+                member.getProfileImagePath();
+
+        String profileImageCloudinaryPublicId =
+                member.getProfileImageCloudinaryPublicId();
+
         List<Trip> ownedTrips =
                 tripRepository
                         .findAllByOwnerIdOrderByCreatedAtDesc(
@@ -399,10 +433,10 @@ public class MemberService {
                         );
 
         for (Trip trip : ownedTrips) {
-                tripService.deleteTripForMemberWithdrawal(
-                        memberId,
-                        trip.getId()
-                );
+            tripService.deleteTripForMemberWithdrawal(
+                    memberId,
+                    trip.getId()
+            );
         }
 
         List<TripMember> participatingTrips =
@@ -433,11 +467,57 @@ public class MemberService {
 
         notificationService.cleanupMemberNotifications(memberId);
 
-        fileStorageService.deleteProfileImage(
-                member.getProfileImagePath()
-        );
-
         memberRepository.delete(member);
+
+        if (
+                (
+                        profileImagePath != null
+                        && !profileImagePath.isBlank()
+                )
+                || (
+                        profileImageCloudinaryPublicId != null
+                        && !profileImageCloudinaryPublicId.isBlank()
+                )
+        ) {
+            TransactionSynchronizationManager
+                    .registerSynchronization(
+                            new TransactionSynchronization() {
+
+                                @Override
+                                public void afterCommit() {
+                                    deleteProfileImage(
+                                            profileImagePath,
+                                            profileImageCloudinaryPublicId
+                                    );
+                                }
+                            }
+                    );
+        }
+    }
+
+    private void deleteProfileImage(
+            String profileImagePath,
+            String cloudinaryPublicId
+    ) {
+        if (
+                cloudinaryPublicId != null
+                && !cloudinaryPublicId.isBlank()
+        ) {
+            cloudinaryService.deleteImage(
+                    cloudinaryPublicId
+            );
+
+            return;
+        }
+
+        if (
+                profileImagePath != null
+                && !profileImagePath.isBlank()
+        ) {
+            fileStorageService.deleteProfileImage(
+                    profileImagePath
+            );
+        }
     }
 
     private void validateDuplicateMember(

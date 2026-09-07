@@ -32,6 +32,7 @@ public class TripPhotoService {
     private final TripMemberRepository tripMemberRepository;
     private final TripPhotoRepository tripPhotoRepository;
     private final FileStorageService fileStorageService;
+    private final CloudinaryService cloudinaryService;
     private final PhotoMetadataService photoMetadataService;
     private final ReverseGeocodingService reverseGeocodingService;
 
@@ -93,11 +94,16 @@ public class TripPhotoService {
                     );
         }
 
-        String filePath =
-                fileStorageService.storeTripPhoto(
-                        tripId,
-                        file
+        fileStorageService.validateTripPhoto(file);
+
+        CloudinaryService.UploadResult uploadResult =
+                cloudinaryService.uploadImage(
+                        file,
+                        "travel-story/trips/" + tripId
                 );
+
+        String filePath = uploadResult.url();
+        String cloudinaryPublicId = uploadResult.publicId();
 
         String originalFileName =
                 file.getOriginalFilename();
@@ -113,6 +119,7 @@ public class TripPhotoService {
                 trip,
                 uploadedBy,
                 filePath,
+                cloudinaryPublicId,
                 originalFileName,
                 takenAt,
                 latitude,
@@ -207,6 +214,18 @@ public class TripPhotoService {
             );
         }
 
+        String cloudinaryPublicId =
+                tripPhoto.getCloudinaryPublicId();
+
+        if (
+                cloudinaryPublicId != null
+                && !cloudinaryPublicId.isBlank()
+        ) {
+        return cloudinaryService.loadImage(
+                tripPhoto.getFilePath()
+        );
+        }
+
         return fileStorageService.loadTripImage(
                 tripId,
                 tripPhoto.getFilePath()
@@ -262,10 +281,22 @@ public class TripPhotoService {
             );
         }
 
+        String cloudinaryPublicId =
+                tripPhoto.getCloudinaryPublicId();
+
+        if (
+                cloudinaryPublicId != null
+                && !cloudinaryPublicId.isBlank()
+        ) {
+        cloudinaryService.deleteImage(
+                cloudinaryPublicId
+        );
+        } else {
         fileStorageService.deleteTripPhoto(
                 tripId,
                 tripPhoto.getFilePath()
         );
+        }
 
         tripPhotoRepository.delete(tripPhoto);
     }

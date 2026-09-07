@@ -20,6 +20,7 @@ public class TripCoverImageService {
     private final TripRepository tripRepository;
     private final TripMemberRepository tripMemberRepository;
     private final FileStorageService fileStorageService;
+    private final CloudinaryService cloudinaryService;
 
     @Transactional
     public TripResponse uploadCoverImage(
@@ -38,13 +39,43 @@ public class TripCoverImageService {
                         )
                 );
 
-        String coverImagePath =
-                fileStorageService.storeTripCoverImage(
-                        tripId,
-                        file
+        fileStorageService.validateTripCoverImage(file);
+
+        CloudinaryService.UploadResult uploadResult =
+                cloudinaryService.uploadImage(
+                        file,
+                        "travel-story/trips/" + tripId + "/cover"
                 );
 
-        trip.updateCoverImagePath(coverImagePath);
+        String previousCoverImagePath =
+                trip.getCoverImagePath();
+
+        String previousCloudinaryPublicId =
+                trip.getCoverImageCloudinaryPublicId();
+
+        if (
+                previousCoverImagePath != null
+                && !previousCoverImagePath.isBlank()
+        ) {
+        if (
+                previousCloudinaryPublicId != null
+                && !previousCloudinaryPublicId.isBlank()
+        ) {
+                cloudinaryService.deleteImage(
+                        previousCloudinaryPublicId
+                );
+        } else {
+                fileStorageService.deleteTripCoverImage(
+                        tripId,
+                        previousCoverImagePath
+                );
+        }
+        }
+
+        trip.updateCoverImage(
+                uploadResult.url(),
+                uploadResult.publicId()
+        );
 
         return TripResponse.from(trip);
     }
@@ -77,12 +108,24 @@ public class TripCoverImageService {
             );
         }
 
+        String cloudinaryPublicId =
+                trip.getCoverImageCloudinaryPublicId();
+
+        if (
+                cloudinaryPublicId != null
+                && !cloudinaryPublicId.isBlank()
+        ) {
+        cloudinaryService.deleteImage(
+                cloudinaryPublicId
+        );
+        } else {
         fileStorageService.deleteTripCoverImage(
                 tripId,
                 coverImagePath
         );
+        }
 
-        trip.updateCoverImagePath(null);
+        trip.clearCoverImage();
 
         return TripResponse.from(trip);
     }
@@ -129,6 +172,18 @@ public class TripCoverImageService {
             throw new IllegalArgumentException(
                     "등록된 대표 이미지가 없습니다."
             );
+        }
+
+        String cloudinaryPublicId =
+                trip.getCoverImageCloudinaryPublicId();
+
+        if (
+                cloudinaryPublicId != null
+                && !cloudinaryPublicId.isBlank()
+        ) {
+        return cloudinaryService.loadImage(
+                coverImagePath
+        );
         }
 
         return fileStorageService.loadTripImage(
